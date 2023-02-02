@@ -1,9 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-analytics.js";
-import {getFirestore, collection, getDocs} from "https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore.js";
-
-
-export function read() {
+import {getFirestore, collection, addDoc, getDocs, where, query} from "https://www.gstatic.com/firebasejs/9.16.0/firebase-firestore.js";
 
 var firebaseConfig = {
     apiKey: "AIzaSyDFh5Tm9oXp8cJoqeg8TWUsBJagxN5IkgU",
@@ -17,21 +13,37 @@ var firebaseConfig = {
   };
 
   // Initialize Firebase
-  var app = initializeApp(firebaseConfig);
-  var analytics = getAnalytics(app);
-  var db = getFirestore(app);
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore();
 
-  async function getResults(db) {
-    const resultRef = collection(db, 'results');
-    const resultsSnapshot = await getDocs(resultRef);
-    const result = resultsSnapshot.docs.map(doc => doc.data());
-    console.log(result);
-    return result;
+  async function read() {
+    try{
+      const q = query(collection(db, "results"));
+      const querySnapshot = await getDocs(q);
+      const results = [];
+      querySnapshot.forEach((doc) => results.push(doc.data()));
+      return results;
+    } catch (e)
+    {
+      console.error("Error fetching: ", e);
+    }
   }
-const dbvalue = getResults(db);
-var temp = document.getElementById("xd");
-temp.innerHTML = dbvalue;
 
-   
-}
+  async function save(name, points) {
+    try{
+      const docRef = await addDoc(collection(db, "results"), {
+        Name: name,
+        Points: points
+      });
+      console.log("name saved: " + name)
+      console.log("Document written in ID: ", docRef.id);
+    }catch (e)
+    {
+      console.error("Error saving", e);
+    }
+  }
 
+
+
+window.FirebaseSave = save;
+window.FirebaseRead = read;

@@ -16,17 +16,20 @@ class NewCanvasGame extends CanvasGame
             wasps[i].start();
         }
 
+        do 
+        {
+            flowers[0] = new Flower();
+        } while (flowers[0].getFlag() != 1);
+
+
         let collisionOffscreenCanvas = document.createElement('canvas');
         this.collisionCtx = collisionOffscreenCanvas.getContext('2d');
-        collisionOffscreenCanvas.width = canvas.width+500;
+        collisionOffscreenCanvas.width = canvas.width*2;
         collisionOffscreenCanvas.height = canvas.height;
-        this.collisionCtx.drawImage(collisionImage, 0, 100, canvas.width, canvas.height-100);
+        this.collisionCtx.drawImage(collisionImage, 0, canvas.height/6, canvas.width, canvas.height*5/6);
 
-        //test level
-        flower_level.splice(0,6,1,0,0,0,0,0);
-
-        //level1 infos
-        //flower_level.splice(0,6,5,3,1,0,0,0);
+        
+        flower_level.splice(0,6,1,1,1,0,0,0);
 
         hudtext.push(new StaticText(flower_counters[0] + "/" + flower_level[0], 60, 33,  "Times Roman", 25, flower_font[0])); //flo1
         hudtext.push(new StaticText(flower_counters[1] + "/" + flower_level[1], 155, 33, "Times Roman", 25, flower_font[0])); //flo2
@@ -126,7 +129,6 @@ class NewCanvasGame extends CanvasGame
                     }, 2000);
 
                 }
-                console.log(flowers[f].getFlag() + ": " + flower_counters[flowers[f].getFlag()-1]);
                 hudtext[0] = new StaticText(flower_counters[0] + "/" + flower_level[0], 60, 33,  "Times Roman", 25, flower_font[0]); //flo1
                 hudtext[1] = new StaticText(flower_counters[1] + "/" + flower_level[1], 155, 33, "Times Roman", 25, flower_font[1]); //flo2
                 hudtext[2] = new StaticText(flower_counters[2] + "/" + flower_level[2], 250, 33, "Times Roman", 25, flower_font[2]); //flo3
@@ -149,7 +151,7 @@ class NewCanvasGame extends CanvasGame
                         gameObjects[i].stop();
                     }
                     gameObjects[HUDTIME].clockstop();
-                    points += 100 * level;
+                    points += 100 * level + countd;
                     gameObjects[HUDPOINTS] = new StaticText("Points: " + points, 300, 60, "Times Roman", 25, "black");
                     gameObjects[HUDPOINTS].start();
 
@@ -177,39 +179,44 @@ class NewCanvasGame extends CanvasGame
                         gameObjects[BEE].start();
                         gameObjects[BACKGROUND].start();
                         gameObjects[WIN_MESSAGE].stopAndHide();
-                        if (level == 0)
+                        countdPRIM+=60;
+                        if (level == 1)
                         {
                         flower_level.splice(0,6,3,2,1,0,0,0);
                         flower_counters.splice(0,6,0,0,0,0,0,0);
                         wasps.push(new MazeWasp(waspImage));
                         }
-                        else if (level == 1)
+                        else if (level == 2)
                         {
                             flower_level.splice(0,6,5,3,2,0,0,0);
                             flower_counters.splice(0,6,0,0,0,0,0,0);
                             wasps.push(new MazeWasp(waspImage));
                         }
-                        else if (level == 2)
+                        else if (level == 3)
                         {
                             flower_level.splice(0,6,7,5,3,2,1,0);
                             flower_counters.splice(0,6,0,0,0,0,0,0);
                             wasps.push(new MazeWasp(waspImage));
                         }
-                        else if (level == 3)
+                        else if (level == 4)
                         {
                             flower_level.splice(0,6,9,7,5,3,2,1);
                             flower_counters.splice(0,6,0,0,0,0,0,0);
                             wasps.push(new MazeWasp(waspImage));
                         }
-                        else if (level == 4)
+                        else if (level == 5)
                         {
                             flower_level.splice(0,6,9,9,9,6,4,3);
                             flower_counters.splice(0,6,0,0,0,0,0,0);
                             wasps.push(new MazeWasp(waspImage));
                         }
-                        else if (level == 5)
+                        else if (level == 6)
                         {
-                            console.log("END OF GAME");
+                            if (saveFlag == false)
+                            {
+                            window.FirebaseSave(namePlayer, points);
+                            saveFlag = true;
+                            }
                         }
                         //DELETE "0" LEVEL!!!
                         gameObjects[HUDLEVEL] = new StaticText("Level " + level, 300, 30, "Times Roman", 25, "black");
@@ -221,7 +228,12 @@ class NewCanvasGame extends CanvasGame
 
                         for (let i=0; i<wasps.length; i++)
                         {
+                            wasps[i] = new MazeWasp(waspImage);
                             wasps[i].start();
+                        }
+                        for (let i=0; i<flowers.length; i++)
+                        {
+                            flowers[i] = new Flower();
                         }
                         flower_font.splice(0,6,"black","black","black","black","black","black");
                         hudtext[0] = new StaticText(flower_counters[0] + "/" + flower_level[0], 60, 33,  "Times Roman", 25, flower_font[0]); //flo1
@@ -273,6 +285,7 @@ class NewCanvasGame extends CanvasGame
                     gameObjects[HUDTIME].clockstart();
                     for (let i=0; i<wasps.length; i++)
                     {
+                        wasps[i] = new MazeWasp(waspImage);
                         wasps[i].start();
                     }
                     gameObjects[BACKGROUND].start();
@@ -302,6 +315,20 @@ class NewCanvasGame extends CanvasGame
                     gameObjects[LOSE_LIFE_MESSAGE].stopAndHide();
                     gameObjects[LOSE_MESSAGE] = new StaticText("You lost all your lifes!", 120, 280, "Times Roman", 30, "red");
                     gameObjects[LOSE_MESSAGE].start();
+                    if (saveFlag == false)
+                    {
+                    let promptDialog = prompt("Please enter your name", "name");
+                    let text;
+                    if (promptDialog == null || promptDialog == "") {
+                        text = "User cancelled high scores";
+                    }
+                    else 
+                    {
+                        namePlayer = promptDialog;
+                        window.FirebaseSave(namePlayer, points);
+                    }
+                    saveFlag = true;
+                    }
                     
                 }
             }

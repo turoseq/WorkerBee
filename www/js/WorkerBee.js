@@ -4,21 +4,6 @@
 /* It also holds game specific code, which will be different for each game       */
 
 
-/*const main = document.querySelector("main");
-import ("/js/Database.js").then((initialiseApp) => {
-    initialiseApp.loadPageInto(main);
-});*/
-
-/*(async () => {
-    if (1) {
-        await import("/js/Database.js");
-    }
-})();*/
-
-
-console.log(document.getElementById("xd").innerHTML);
-
-
 
 /******************** Declare game specific global data and functions *****************/
 /* images must be declared as global, so that they will load before the game starts  */
@@ -89,11 +74,14 @@ let flowers = [];
 let arrayX = [];
 let hudtext = [];
 let hearts = 3;
-let level = 0;
+let level = 1;
 let points = 0;
 let wasps = [];
-let countdPRIM = 240;
+let countdPRIM = 120;
 let countd = countdPRIM;
+let namePlayer="klaster";
+let saveFlag = false;
+let i = 0;
 
 
 let flower_counters=[0,0,0,0,0,0];
@@ -124,11 +112,21 @@ function playGame()
 
     gameObjects[BACKGROUND] = new MovingBg(background);
     gameObjects[BEE] = new MazeBee(beeImage, 50, 150);
-    gameObjects[HUD] = new StaticImage(hudImage, 0, 0, 500, 100);
+    gameObjects[HUD] = new StaticImage(hudImage, 0, 0, canvas.width, canvas.height/6);
     gameObjects[HUDLEVEL] = new StaticText("Level " + level, 300, 30, "Times Roman", 25, "black");
     gameObjects[HUDPOINTS] = new StaticText("Points: " + points, 300, 60, "Times Roman", 25, "black");
     gameObjects[HUDTIME] = new Timer(countd, 300, 90, "Times Roman", 25, "black");
 
+
+    window.FirebaseRead().then(elements=> {
+        alert(
+            "Highscores: \n" + 
+            elements.sort((a,b) => a.Points > b.Points ? -1 : 1)
+            .slice(0,5)
+            .map((entry, index) => `${index + 1}. ${entry.Name}    ${entry.Points}  \n`).join('')
+           + " \n                              Click Ok to start the game" 
+        )})
+    
 
 
     /* END OF game specific code. */
@@ -141,6 +139,9 @@ function playGame()
     game.start();
 
     /* If they are needed, then include any game-specific mouse and keyboard listners */
+
+    window.addEventListener("deviceorientation", this.handleOrientation);
+
     document.addEventListener('keydown', function (e)
     {
         if (e.keyCode === 37)  // left
@@ -160,4 +161,51 @@ function playGame()
             gameObjects[BEE].setDirection(DOWN);
         }
     });
+}
+function handleOrientation(event) {
+    console.log("Alpha: "+ event.alpha);
+    console.log("Beta: "+ event.beta);
+    console.log("Gamma: "+ event.gamma);
+    if(i===0){
+        constX = event.gamma;
+        constY = event.beta;
+        console.log("constX: "+constX)
+        console.log("constY: "+constY)
+        i++;
+    }
+    console.log("Absolute: "+ event.absolute);
+    if(constX != null){
+        if(event.gamma>constX+10.0){
+            gameObjects[BEE].setDirection(RIGHT);
+        }
+        else if(event.gamma<constX-10.0){
+            gameObjects[BEE].setDirection(LEFT);
+        }
+        else if(event.beta>constY+10.0){
+            gameObjects[BEE].setDirection(DOWN);
+        }
+        else if(event.beta<constY-10.0){
+            gameObjects[BEE].setDirection(UP);
+        }
+        else if(event.gamma>constX-10.0 && event.gamma<constX+10.0 || event.beta>constY-10.0 && event.beta<constY+10.0){
+            gameObjects[BEE].setDirection(STOPPED);
+        }   
+    }
+    else{
+        if(event.gamma>10.0){
+            gameObjects[BEE].setDirection(RIGHT);
+        }
+        else if(event.gamma<-10.0){
+            gameObjects[BEE].setDirection(LEFT);
+        }
+        else if(event.beta>10.0){
+            gameObjects[BEE].setDirection(DOWN);
+        }
+        else if(event.beta<-10.0){
+            gameObjects[BEE].setDirection(UP);
+        }
+        else if(event.gamma>-10.0 && event.gamma<10.0 || event.beta>10.0 && event.beta<-10.0){
+            gameObjects[BEE].setDirection(STOPPED);
+        }   
+    }
 }

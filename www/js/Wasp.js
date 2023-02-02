@@ -10,7 +10,7 @@ class Wasp extends GameObject
         {
         this.centreX = 30 + Math.floor(Math.random() * 940);
         this.centreY = 130 + Math.floor(Math.random() * 440);
-        } while (this.centreX < 130 || this.centreY < 230);
+        } while (this.centreX < 300 && this.centreY < 400);
 
         this.NUMBER_OF_COLUMNS_IN_SPRITE = 2;
         this.NUMBER_OF_ROWS_IN_SPRITE = 9;
